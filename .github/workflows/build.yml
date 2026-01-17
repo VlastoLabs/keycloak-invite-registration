@@ -1,0 +1,42 @@
+git config --global user.namename: Build and Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+        
+    - name: Build with Maven
+      run: mvn clean package -B
+      
+    - name: Run tests
+      run: mvn test -B
+      
+    - name: Verify build
+      run: |
+        if [ -f target/*.jar ]; then
+          echo "Build successful: $(ls target/*.jar)"
+        else
+          echo "Build failed: No JAR file found"
+          exit 1
+        fi
