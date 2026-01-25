@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Klyro
+ * Copyright 2026 Klyro Software
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +18,17 @@ package org.klyro.keycloak.provider;
 
 import org.klyro.keycloak.entity.InvitationEntity;
 
+import java.util.Optional;
+
 /**
  * Interface for invitation provider operations to enable easier testing.
  */
 public interface InvitationProvider {
-    InvitationEntity findByToken(String token);
-    InvitationEntity findByTokenAndRealm(String token, String realm);
+    Optional<InvitationEntity> findByToken(String token);
+
+    Optional<InvitationEntity> findByTokenAndRealm(String token, String realm);
+
     String createInvitation(String realm, int expirationSeconds);
-    void markAsUsed(String token);
+
+    boolean markAsUsed(String token, String realm);
 }

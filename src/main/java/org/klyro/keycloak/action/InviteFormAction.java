@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Klyro
+ * Copyright 2026 Klyro Software
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,148 +16,140 @@
  */
 package org.klyro.keycloak.action;
 
+import org.jboss.logging.Logger;
+import org.keycloak.authentication.FormAction;
 import org.keycloak.authentication.FormContext;
 import org.keycloak.authentication.ValidationContext;
-import org.keycloak.authentication.FormAction;
-import org.keycloak.models.utils.FormMessage;
-import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.services.messages.Messages;
+import org.keycloak.models.utils.FormMessage;
+import org.klyro.keycloak.model.ValidationResult;
 import org.klyro.keycloak.service.InvitationService;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * FormAction that validates invitation tokens during registration.
- * Checks if the invite query parameter contains a valid, unused token.
+ * Enforces invite-only registration by requiring a valid, unused token.
  */
 public class InviteFormAction implements FormAction {
-    private KeycloakSession session;
+    private static final Logger log = Logger.getLogger(InviteFormAction.class);
+
+    private static final String INVITE_PARAM = "inviteCode";
+    private static final String AUTH_NOTE_KEY = "INVITE_TOKEN";
 
     @Override
     public void buildPage(FormContext context, LoginFormsProvider form) {
-        // Extract invite token from URL query parameter
-        String inviteToken = context.getUriInfo().getQueryParameters().getFirst("inviteCode");
-
-        if (inviteToken != null) {
-            // Persist token in Auth Session so it survives validation errors (e.g. bad password)
-            context.getAuthenticationSession().setAuthNote("INVITE_TOKEN", inviteToken);
-        }
+        extractAndStoreToken(context);
     }
 
     @Override
     public void validate(ValidationContext context) {
-        this.session = context.getSession();
-        String token = context.getAuthenticationSession().getAuthNote("INVITE_TOKEN");
-
-        // Extract from URL if not in auth session (first visit)
-        if (token == null) {
-            token = context.getUriInfo().getQueryParameters().getFirst("inviteCode");
-            if (token != null) {
-                context.getAuthenticationSession().setAuthNote("INVITE_TOKEN", token);
-            }
-        }
-
-        String realmId = context.getRealm().getId();
-
-        // If no token in URL, block registration
-        if (token == null || token.isEmpty()) {
-            // Set the error in the authentication session so the template can display it
-            context.getAuthenticationSession().setAuthNote("inviteCodeError", "inviteCodeMissing");
-            // Also add as a form message for standard error display
-            java.util.List<FormMessage> errors = new java.util.ArrayList<>();
-            errors.add(new FormMessage(null, "inviteCodeMissing"));
-            context.validationError(context.getHttpRequest().getDecodedFormParameters(), errors);
-            return;
-        }
-
-        // Use service to validate the invitation token for the current realm
-        InvitationService invitationService = new InvitationService(session);
-        java.util.Optional<org.klyro.keycloak.entity.InvitationEntity> invitationOpt = invitationService.validateInvite(token, realmId);
-
-        if (invitationOpt.isEmpty()) {
-            // Check if expired vs already used vs invalid for specific message
-            org.klyro.keycloak.entity.InvitationEntity existing = new InvitationService(session).findByToken(token);
-
-            // Set the error in the authentication session so the template can display it
-            String errorCode = (existing != null && existing.isUsed()) ? "inviteCodeAlreadyUsed" : "inviteCodeInvalid";
-            context.getAuthenticationSession().setAuthNote("inviteCodeError", errorCode);
-
-            // Use validationError to properly handle the error with form data
-            java.util.List<FormMessage> errors = new java.util.ArrayList<>();
-            errors.add(new FormMessage(null, errorCode));
-
-            context.validationError(context.getHttpRequest().getDecodedFormParameters(), errors);
-            return;
-        }
-
-        // Token is valid, allow registration to proceed
-        context.getEvent().detail("invite_token", token);
-        context.success();
+        validate(context, createInvitationService(context.getSession()));
     }
 
-    /**
-     * Method for testing purposes to allow dependency injection.
-     */
-    public void validate(ValidationContext context, InvitationService invitationService) {
-        this.session = context.getSession();
-        String token = context.getAuthenticationSession().getAuthNote("INVITE_TOKEN");
+    void validate(ValidationContext context, InvitationService invitationService) {
+        var tokenOpt = getOrExtractToken(context);
 
-        // Extract from URL if not in auth session (first visit)
-        if (token == null) {
-            token = context.getUriInfo().getQueryParameters().getFirst("inviteCode");
-            if (token != null) {
-                context.getAuthenticationSession().setAuthNote("INVITE_TOKEN", token);
-            }
+        if (tokenOpt.isEmpty()) {
+            handleMissingToken(context);
+            return;
         }
 
+        String token = tokenOpt.get();
         String realmId = context.getRealm().getId();
+        ValidationResult result = invitationService.validateInviteDetailed(token, realmId);
 
-        // If no token in URL, block registration
-        if (token == null || token.isEmpty()) {
-            // Set the error in the authentication session so the template can display it
-            context.getAuthenticationSession().setAuthNote("inviteCodeError", "inviteCodeMissing");
-            // Also add as a form message for standard error display
-            java.util.List<FormMessage> errors = new java.util.ArrayList<>();
-            errors.add(new FormMessage(null, "inviteCodeMissing"));
-            context.validationError(context.getHttpRequest().getDecodedFormParameters(), errors);
-            return;
-        }
-
-        // Use service to validate the invitation token for the current realm
-        java.util.Optional<org.klyro.keycloak.entity.InvitationEntity> invitationOpt = invitationService.validateInvite(token, realmId);
-
-        if (invitationOpt.isEmpty()) {
-            // Check if expired vs already used vs invalid for specific message
-            org.klyro.keycloak.entity.InvitationEntity existing = invitationService.findByToken(token);
-
-            // Set the error in the authentication session so the template can display it
-            String errorCode = (existing != null && existing.isUsed()) ? "inviteCodeAlreadyUsed" : "inviteCodeInvalid";
-            context.getAuthenticationSession().setAuthNote("inviteCodeError", errorCode);
-
-            // Use validationError to properly handle the error with form data
-            java.util.List<FormMessage> errors = new java.util.ArrayList<>();
-            errors.add(new FormMessage(null, errorCode));
-
-            context.validationError(context.getHttpRequest().getDecodedFormParameters(), errors);
-            return;
-        }
-
-        // Token is valid, allow registration to proceed
-        context.getEvent().detail("invite_token", token);
-        context.success();
+        handleValidationResult(context, result);
     }
 
     @Override
     public void success(FormContext context) {
-        // Mark the token as used after successful registration
-        String token = context.getAuthenticationSession().getAuthNote("INVITE_TOKEN");
+        getStoredToken(context).ifPresent(token -> markTokenAsUsed(context, token));
+    }
 
-        if (token != null && !token.isEmpty()) {
-            InvitationService invitationService = new InvitationService(context.getSession());
-            invitationService.markAsUsed(token);
+    private void extractAndStoreToken(FormContext context) {
+        getQueryParameter(context, INVITE_PARAM)
+                .ifPresent(token -> {
+                    storeToken(context, token);
+                    logDebug("Stored invite token in auth session", context.getRealm());
+                });
+    }
+
+    private Optional<String> getOrExtractToken(ValidationContext context) {
+        return getStoredToken(context)
+                .or(() -> getQueryParameter(context, INVITE_PARAM)
+                        .map(token -> {
+                            storeToken(context, token);
+                            return token;
+                        }));
+    }
+
+    private Optional<String> getStoredToken(FormContext context) {
+        return Optional.ofNullable(context.getAuthenticationSession().getAuthNote(AUTH_NOTE_KEY))
+                .filter(token -> !token.isBlank());
+    }
+
+    private Optional<String> getQueryParameter(FormContext context, String paramName) {
+        return Optional.ofNullable(context.getUriInfo().getQueryParameters().getFirst(paramName))
+                .filter(value -> !value.isBlank());
+    }
+
+    private void storeToken(FormContext context, String token) {
+        context.getAuthenticationSession().setAuthNote(AUTH_NOTE_KEY, token);
+    }
+
+    private void handleMissingToken(ValidationContext context) {
+        logWarn("Registration blocked - no invite token", context.getRealm());
+        setValidationError(context, "inviteCodeMissing");
+    }
+
+    private void handleValidationResult(ValidationContext context, ValidationResult result) {
+        if (result.isValid()) {
+            handleValidToken(context);
+        } else {
+            handleInvalidToken(context, result.errorCode());
         }
+    }
+
+    private void handleValidToken(ValidationContext context) {
+        logDebug("Valid invite token accepted", context.getRealm());
+        context.success();
+    }
+
+    private void handleInvalidToken(ValidationContext context, String errorCode) {
+        logWarn("Invalid invite token (error: %s)".formatted(errorCode), context.getRealm());
+        setValidationError(context, errorCode);
+    }
+
+    private void setValidationError(ValidationContext context, String errorCode) {
+        var errors = List.of(new FormMessage(null, errorCode));
+        context.validationError(context.getHttpRequest().getDecodedFormParameters(), errors);
+    }
+
+    private void markTokenAsUsed(FormContext context, String token) {
+        try {
+            var invitationService = createInvitationService(context.getSession());
+            invitationService.markAsUsed(token);
+            logDebug("Invitation token marked as used", context.getRealm());
+        } catch (Exception e) {
+            log.errorf(e, "Failed to mark invitation as used - registration still succeeded");
+        }
+    }
+
+    private InvitationService createInvitationService(KeycloakSession session) {
+        return new InvitationService(session);
+    }
+
+    private void logDebug(String message, RealmModel realm) {
+        log.debugf("%s for realm: %s", message, realm.getName());
+    }
+
+    private void logWarn(String message, RealmModel realm) {
+        log.warnf("%s for realm: %s", message, realm.getName());
     }
 
     @Override
@@ -166,13 +158,13 @@ public class InviteFormAction implements FormAction {
     }
 
     @Override
-    public boolean configuredFor(KeycloakSession keycloakSession, RealmModel realmModel, UserModel userModel) {
+    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
         return true;
     }
 
     @Override
-    public void setRequiredActions(KeycloakSession keycloakSession, RealmModel realmModel, UserModel userModel) {
-        // No required actions needed
+    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+        // No required actions
     }
 
     @Override

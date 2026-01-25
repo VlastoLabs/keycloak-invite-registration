@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Klyro
+ * Copyright 2026 Klyro Software
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,9 @@ public class InviteFormActionFactory implements FormActionFactory {
     public static final String PROVIDER_ID = "registration-invite-action";
 
     @Override
-    public String getDisplayType() { return "Registration Invite Gate"; }
+    public String getDisplayType() {
+        return "Registration Invite Gate";
+    }
 
     @Override
     public String getReferenceCategory() {
@@ -38,25 +40,46 @@ public class InviteFormActionFactory implements FormActionFactory {
     }
 
     @Override
-    public String getHelpText() { return "Requires a specific code to register."; }
+    public String getHelpText() {
+        return "Requires a specific code to register.";
+    }
 
     @Override
-    public String getId() { return PROVIDER_ID; }
+    public String getId() {
+        return PROVIDER_ID;
+    }
 
     @Override
-    public FormAction create(KeycloakSession session) { return new InviteFormAction(); }
+    public FormAction create(KeycloakSession session) {
+        return new InviteFormAction();
+    }
 
     // Required by Factory Interface
-    @Override public void init(Config.Scope config) {}
-    @Override public void postInit(KeycloakSessionFactory factory) {}
-    @Override public void close() {}
+    @Override
+    public void init(Config.Scope config) {
+    }
 
-    @Override public boolean isConfigurable() { return true; }
-    @Override public boolean isUserSetupAllowed() { return false; }
+    @Override
+    public void postInit(KeycloakSessionFactory factory) {
+    }
+
+    @Override
+    public void close() {
+    }
+
+    @Override
+    public boolean isConfigurable() {
+        return true;
+    }
+
+    @Override
+    public boolean isUserSetupAllowed() {
+        return false;
+    }
 
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
-        return new AuthenticationExecutionModel.Requirement[] { AuthenticationExecutionModel.Requirement.REQUIRED };
+        return new AuthenticationExecutionModel.Requirement[]{AuthenticationExecutionModel.Requirement.REQUIRED};
     }
 
     @Override

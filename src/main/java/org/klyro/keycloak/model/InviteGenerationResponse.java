@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Klyro
+ * Copyright 2026 Klyro Software
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,8 +17,6 @@
 package org.klyro.keycloak.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.time.Instant;
 
 /**
  * Response model for invitation token generation.

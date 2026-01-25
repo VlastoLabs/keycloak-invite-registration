@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Klyro
+ * Copyright 2026 Klyro Software
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +17,10 @@
 package org.klyro.keycloak.provider;
 
 import org.keycloak.Config;
-import org.keycloak.connections.jpa.JpaConnectionProvider;
-import org.keycloak.connections.jpa.JpaConnectionProviderFactory;
 import org.keycloak.connections.jpa.entityprovider.JpaEntityProvider;
 import org.keycloak.connections.jpa.entityprovider.JpaEntityProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.provider.Provider;
-import org.keycloak.provider.ProviderFactory;
-
-import java.sql.Connection;
 
 /**
  * Factory for creating InvitationJpaProvider instances.
