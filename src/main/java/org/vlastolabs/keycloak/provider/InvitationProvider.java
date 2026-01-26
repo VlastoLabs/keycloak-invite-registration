@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 Klyro Software
+ * Copyright 2026 VlastoLabs Software
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.klyro.keycloak.provider;
+package org.vlastolabs.keycloak.provider;
 
-import org.klyro.keycloak.entity.InvitationEntity;
+import org.vlastolabs.keycloak.entity.InvitationEntity;
 
 import java.util.Optional;
 

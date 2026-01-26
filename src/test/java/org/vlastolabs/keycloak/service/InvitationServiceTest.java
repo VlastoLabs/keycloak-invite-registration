@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 Klyro Software
+ * Copyright 2026 VlastoLabs Software
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.klyro.keycloak.service;
+package org.vlastolabs.keycloak.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.models.RealmModel;
-import org.klyro.keycloak.entity.InvitationEntity;
-import org.klyro.keycloak.model.InviteGenerationResponse;
-import org.klyro.keycloak.provider.InvitationProvider;
+import org.vlastolabs.keycloak.entity.InvitationEntity;
+import org.vlastolabs.keycloak.model.InviteGenerationResponse;
+import org.vlastolabs.keycloak.provider.InvitationProvider;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;

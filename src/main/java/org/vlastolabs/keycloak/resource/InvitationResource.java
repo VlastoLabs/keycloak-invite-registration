@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 Klyro Software
+ * Copyright 2026 VlastoLabs Software
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.klyro.keycloak.resource;
+package org.vlastolabs.keycloak.resource;
 
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -25,8 +25,8 @@ import org.keycloak.models.AdminRoles;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
-import org.klyro.keycloak.model.InviteGenerationResponse;
-import org.klyro.keycloak.service.InvitationService;
+import org.vlastolabs.keycloak.model.InviteGenerationResponse;
+import org.vlastolabs.keycloak.service.InvitationService;
 
 /**
  * REST endpoint for generating invitation tokens.

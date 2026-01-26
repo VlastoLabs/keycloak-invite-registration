@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 Klyro Software
+ * Copyright 2026 VlastoLabs Software
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.klyro.keycloak.action;
+package org.vlastolabs.keycloak.action;
 
 import org.keycloak.Config;
 import org.keycloak.authentication.FormAction;

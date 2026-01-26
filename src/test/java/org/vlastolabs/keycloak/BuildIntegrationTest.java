@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 Klyro Software
+ * Copyright 2026 VlastoLabs Software
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.klyro.keycloak;
+package org.vlastolabs.keycloak;
 
 import org.junit.jupiter.api.Test;
-import org.klyro.keycloak.model.InviteGenerationResponse;
+import org.vlastolabs.keycloak.model.InviteGenerationResponse;
 
 import static org.junit.jupiter.api.Assertions.*;
 
