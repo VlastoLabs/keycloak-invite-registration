@@ -5,7 +5,7 @@ services:
     image: quay.io/keycloak/keycloak:26.0.0
     container_name: keycloak_web
     volumes:
-      - ./target/keycloak-invite-registration-1.0-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-invite-registration-1.0-SNAPSHOT.jar
+      - ./target/keycloak-invite-registration-1.0.0-A.1.jar:/opt/keycloak/providers/keycloak-invite-registration-1.0.0-A.1.jar
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloakdb:5432/keycloak
