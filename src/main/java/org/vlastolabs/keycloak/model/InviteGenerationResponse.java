@@ -23,11 +23,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Contains the generated token and associated metadata.
  */
 public class InviteGenerationResponse {
-    private final String token;
-    private final String realm;
-    private final String message;
-    private final long expirationTime;
-    private final boolean used;
+    private String token;
+    private String realm;
+    private String message;
+    private long expirationTime;
+    private boolean used;
 
     public InviteGenerationResponse(String token, String realm, String message, long expirationTime, boolean used) {
         this.token = token;
@@ -35,6 +35,9 @@ public class InviteGenerationResponse {
         this.message = message;
         this.expirationTime = expirationTime;
         this.used = used;
+    }
+
+    public InviteGenerationResponse() {
     }
 
     @JsonProperty("token")
@@ -60,5 +63,25 @@ public class InviteGenerationResponse {
     @JsonProperty("used")
     public boolean isUsed() {
         return used;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public void setRealm(String realm) {
+        this.realm = realm;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setExpirationTime(long expirationTime) {
+        this.expirationTime = expirationTime;
+    }
+
+    public void setUsed(boolean used) {
+        this.used = used;
     }
 }

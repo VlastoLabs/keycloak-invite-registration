@@ -28,8 +28,14 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4
+
+      - name: Restart Docker
+        run: sudo systemctl restart docker
+
       - name: Build with Maven
-        run: mvn clean package -B
+        run: mvn clean package -B -DskipTests
 
       - name: Run tests
         run: mvn test -B
