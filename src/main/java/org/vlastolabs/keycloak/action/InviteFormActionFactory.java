@@ -36,7 +36,7 @@ public class InviteFormActionFactory implements FormActionFactory {
 
     @Override
     public String getReferenceCategory() {
-        return "";
+        return "registration";
     }
 
     @Override
@@ -79,16 +79,11 @@ public class InviteFormActionFactory implements FormActionFactory {
 
     @Override
     public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
-        return new AuthenticationExecutionModel.Requirement[]{AuthenticationExecutionModel.Requirement.REQUIRED};
+        return new AuthenticationExecutionModel.Requirement[]{AuthenticationExecutionModel.Requirement.REQUIRED, AuthenticationExecutionModel.Requirement.DISABLED};
     }
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
-        ProviderConfigProperty property = new ProviderConfigProperty();
-        property.setName("invite_code_secret");
-        property.setLabel("Valid Invite Code");
-        property.setType(ProviderConfigProperty.STRING_TYPE);
-        property.setHelpText("Users must enter this code to sign up.");
-        return List.of(property);
+        return List.of();
     }
 }

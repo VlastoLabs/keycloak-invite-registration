@@ -21,6 +21,7 @@ import org.keycloak.authentication.FormAction;
 import org.keycloak.authentication.FormContext;
 import org.keycloak.authentication.ValidationContext;
 import org.keycloak.forms.login.LoginFormsProvider;
+import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -48,6 +49,9 @@ public class InviteFormAction implements FormAction {
 
     @Override
     public void validate(ValidationContext context) {
+        if (context.getExecution().getRequirement() == AuthenticationExecutionModel.Requirement.DISABLED) {
+            return;
+        }
         validate(context, createInvitationService(context.getSession()));
     }
 
@@ -68,6 +72,9 @@ public class InviteFormAction implements FormAction {
 
     @Override
     public void success(FormContext context) {
+        if (context.getExecution().getRequirement() == AuthenticationExecutionModel.Requirement.DISABLED) {
+            return;
+        }
         getStoredToken(context).ifPresent(token -> markTokenAsUsed(context, token));
     }
 
