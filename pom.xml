@@ -21,6 +21,7 @@
         <awaitility.version>4.2.0</awaitility.version>
         <httpclient5.version>5.2.1</httpclient5.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <commons-lang3.version>3.20.0</commons-lang3.version>
     </properties>
 
     <dependencies>
@@ -62,6 +63,12 @@
         </dependency>
 
         <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
