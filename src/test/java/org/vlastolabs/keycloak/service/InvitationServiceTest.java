@@ -416,4 +416,100 @@ class InvitationServiceTest {
         assertTrue(result.getInvitationEntity().isEmpty());
         assertEquals("inviteCodeInvalid", result.errorCode());
     }
+
+    @Test
+    void getAllInvitations_withValidData_shouldReturnInvitations() {
+        // Arrange
+        var expectedEntities = java.util.List.of(
+            new InvitationEntity("id1", "token1", false, "realm1"),
+            new InvitationEntity("id2", "token2", true, "realm2")
+        );
+        when(provider.findAll(0, 10)).thenReturn(expectedEntities);
+
+        // Act
+        var result = invitationService.getAllInvitations(0, 10);
+
+        // Assert
+        assertEquals(expectedEntities, result);
+        verify(provider).findAll(0, 10);
+    }
+
+    @Test
+    void countAllInvitations_shouldReturnCount() {
+        // Arrange
+        long expectedCount = 5L;
+        when(provider.countAll()).thenReturn(expectedCount);
+
+        // Act
+        var result = invitationService.countAllInvitations();
+
+        // Assert
+        assertEquals(expectedCount, result);
+        verify(provider).countAll();
+    }
+
+    @Test
+    void getAllInvitationsPaginated_withValidData_shouldReturnPaginatedResponse() {
+        // Arrange
+        var entities = java.util.List.of(
+            new InvitationEntity("id1", "token1", false, "realm1", System.currentTimeMillis() + 3600000L),
+            new InvitationEntity("id2", "token2", true, "realm2", System.currentTimeMillis() + 7200000L)
+        );
+        long totalCount = 2L;
+
+        when(provider.findAll(0, 10)).thenReturn(entities);
+        when(provider.countAll()).thenReturn(totalCount);
+
+        // Act
+        var result = invitationService.getAllInvitationsPaginated(0, 10);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.getData().size());
+        assertEquals(0, result.getPagination().getPage());
+        assertEquals(10, result.getPagination().getSize());
+        assertEquals(totalCount, result.getPagination().getTotalElements());
+        assertEquals(1, result.getPagination().getTotalPages());
+        assertFalse(result.getPagination().isHasNext());
+        assertFalse(result.getPagination().isHasPrevious());
+
+        var firstItem = result.getData().get(0);
+        assertEquals("id1", firstItem.getId());
+        assertEquals("token1", firstItem.getToken());
+        assertFalse(firstItem.isUsed());
+        assertEquals("realm1", firstItem.getRealm());
+        assertNotNull(firstItem.getExpiresOn());
+
+        var secondItem = result.getData().get(1);
+        assertEquals("id2", secondItem.getId());
+        assertEquals("token2", secondItem.getToken());
+        assertTrue(secondItem.isUsed());
+        assertEquals("realm2", secondItem.getRealm());
+        assertNotNull(secondItem.getExpiresOn());
+    }
+
+    @Test
+    void getAllInvitationsPaginated_withMultiplePages_shouldSetPaginationCorrectly() {
+        // Arrange
+        var entities = java.util.List.of(
+            new InvitationEntity("id1", "token1", false, "realm1")
+        );
+        long totalCount = 25L; // More than page size to test pagination
+
+        when(provider.findAll(0, 10)).thenReturn(entities);
+        when(provider.countAll()).thenReturn(totalCount);
+
+        // Act
+        var result = invitationService.getAllInvitationsPaginated(0, 10);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.getData().size());
+        assertEquals(0, result.getPagination().getPage());
+        assertEquals(10, result.getPagination().getSize());
+        assertEquals(totalCount, result.getPagination().getTotalElements());
+        assertEquals(3, result.getPagination().getTotalPages()); // 25/10 = 3 pages
+        assertTrue(result.getPagination().isHasNext());
+        assertFalse(result.getPagination().isHasPrevious());
+    }
 }

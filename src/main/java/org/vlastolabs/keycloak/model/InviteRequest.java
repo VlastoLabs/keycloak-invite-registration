@@ -14,26 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vlastolabs.keycloak.provider;
+package org.vlastolabs.keycloak.model;
 
-import org.vlastolabs.keycloak.entity.InvitationEntity;
-
-import java.util.List;
-import java.util.Optional;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Interface for invitation provider operations to enable easier testing.
+ * Request model for invitation token generation.
  */
-public interface InvitationProvider {
-    Optional<InvitationEntity> findByToken(String token);
+public class InviteRequest {
 
-    Optional<InvitationEntity> findByTokenAndRealm(String token, String realm);
+    private Integer expirationTime;
 
-    String createInvitation(String realm, int expirationSeconds);
+    public InviteRequest() {
+    }
 
-    boolean markAsUsed(String token, String realm);
+    public InviteRequest(Integer expirationTime) {
+        this.expirationTime = expirationTime;
+    }
 
-    List<InvitationEntity> findAll(int offset, int limit);
+    @JsonProperty("expirationTime")
+    public Integer getExpirationTime() {
+        return expirationTime;
+    }
 
-    long countAll();
+    public void setExpirationTime(Integer expirationTime) {
+        this.expirationTime = expirationTime;
+    }
 }

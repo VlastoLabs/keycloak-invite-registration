@@ -37,10 +37,14 @@ import org.keycloak.connections.jpa.entityprovider.JpaEntityProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.vlastolabs.keycloak.entity.InvitationEntity;
+import org.vlastolabs.keycloak.model.InvitationListItem;
 import org.vlastolabs.keycloak.model.InviteGenerationResponse;
+import org.vlastolabs.keycloak.model.PaginatedInvitationResponse;
+import org.vlastolabs.keycloak.model.PaginationInfo;
 import org.vlastolabs.keycloak.model.ValidationResult;
 import org.vlastolabs.keycloak.provider.InvitationProvider;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -92,6 +96,7 @@ public class InvitationService {
      */
     public InviteGenerationResponse generateInvite(RealmModel realmModel, int expirationSeconds) {
         validateRealmModel(realmModel);
+        validateExpirationTime(expirationSeconds);
 
         String realmId = realmModel.getId();
         String token = provider.createInvitation(realmId, expirationSeconds);
@@ -101,6 +106,18 @@ public class InvitationService {
                 .orElseThrow(() -> new InvitationGenerationException(
                         "Failed to retrieve newly created invitation token: " + token
                 ));
+    }
+
+    /**
+     * Validates that the expiration time is positive.
+     *
+     * @param expirationSeconds the expiration time in seconds
+     * @throws IllegalArgumentException if expirationSeconds is not positive
+     */
+    private void validateExpirationTime(int expirationSeconds) {
+        if (expirationSeconds <= 0) {
+            throw new IllegalArgumentException("Expiration time must be positive");
+        }
     }
 
     private InviteGenerationResponse createInviteGenerationResponse(InvitationEntity entity) {
@@ -248,6 +265,66 @@ public class InvitationService {
 
     private void logWarning(String message) {
         log.warn(message);
+    }
+
+    /**
+     * Retrieve all invitations with pagination and sorting.
+     *
+     * @param offset the number of records to skip
+     * @param limit the maximum number of records to return
+     * @return list of invitation entities
+     */
+    public List<InvitationEntity> getAllInvitations(int offset, int limit) {
+        return provider.findAll(offset, limit);
+    }
+
+    /**
+     * Count all invitations.
+     *
+     * @return the total count of invitations
+     */
+    public long countAllInvitations() {
+        return provider.countAll();
+    }
+
+    /**
+     * Retrieve all invitations with pagination and sorting, returning a paginated response.
+     *
+     * @param page the page number (starting from 0)
+     * @param size the page size
+     * @return PaginatedInvitationResponse containing the invitations and pagination info
+     */
+    public PaginatedInvitationResponse getAllInvitationsPaginated(int page, int size) {
+        int offset = page * size;
+        var invitations = getAllInvitations(offset, size);
+        var totalElements = countAllInvitations();
+        var totalPages = (int) Math.ceil((double) totalElements / size);
+
+        var invitationDtos = invitations.stream()
+                .map(this::convertToInvitationListItemDto)
+                .toList();
+
+        var paginationInfo = new PaginationInfo(
+                page,
+                size,
+                totalElements,
+                totalPages,
+                page < totalPages - 1,
+                page > 0
+        );
+
+        return new PaginatedInvitationResponse(invitationDtos, paginationInfo);
+    }
+
+    private InvitationListItem convertToInvitationListItemDto(InvitationEntity entity) {
+        return new InvitationListItem(
+                entity.getId(),
+                entity.getToken(),
+                entity.isUsed(),
+                entity.getRealm(),
+                entity.getCreatedOn(),
+                entity.getExpiresOn()
+        );
     }
 
     public static class InvitationGenerationException extends RuntimeException {

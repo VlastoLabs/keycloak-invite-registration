@@ -49,7 +49,13 @@ The REST endpoint requires users to have the `admin` realm role to generate invi
 ### Generate Invitation Token
 - **Endpoint**: `POST /admin/realms/{realm}/invites/generate`
 - **Authentication**: Requires admin realm role
-- **Request**: No request body required
+- **Request Body**: Optional JSON object with custom expiration time
+  ```json
+  {
+    "expirationTime": 3600
+  }
+  ```
+  Where `expirationTime` is the number of seconds until expiration (defaults to 24 hours if not provided)
 - **Response**: JSON object with invitation details
 
 #### Example Request
@@ -57,7 +63,8 @@ The REST endpoint requires users to have the `admin` realm role to generate invi
 curl -X POST \
   http://localhost:8080/admin/realms/myrealm/invites/generate \
   -H 'Authorization: Bearer <admin_token>' \
-  -H 'Content-Type: application/json'
+  -H 'Content-Type: application/json' \
+  -d '{"expirationTime": 3600}'
 ```
 
 #### Example Response
@@ -68,6 +75,46 @@ curl -X POST \
   "message": "Invitation token generated successfully",
   "expirationTime": 1703123456789,
   "used": false
+}
+```
+
+### Get All Invitation Tokens (with pagination)
+- **Endpoint**: `GET /admin/realms/{realm}/invites`
+- **Authentication**: Requires admin realm role
+- **Query Parameters**:
+  - `page` (optional): Page number (0-indexed, defaults to 0)
+  - `size` (optional): Page size (defaults to 20, max 100)
+- **Response**: JSON object with paginated list of invitation tokens
+
+#### Example Request
+```bash
+curl -X GET \
+  http://localhost:8080/admin/realms/myrealm/invites?page=0&size=10 \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Accept: application/json'
+```
+
+#### Example Response
+```json
+{
+  "data": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "token": "xyz789...",
+      "used": false,
+      "realm": "myrealm",
+      "createdOn": 1703123456789,
+      "expiresOn": 1703209856789
+    }
+  ],
+  "pagination": {
+    "page": 0,
+    "size": 10,
+    "totalElements": 25,
+    "totalPages": 3,
+    "hasNext": true,
+    "hasPrevious": false
+  }
 }
 ```
 
